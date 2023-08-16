@@ -47,11 +47,16 @@ export function ProfileScreen() {
         </TouchableOpacity>
        
         {historyHunts.map((hunt, index) => (
-          <View style={styles.section} key={index}>
-            <Text style={styles.sectionTitle}>{hunt.title}</Text>
-            <Text style={styles.sectionDescription}>{hunt.description}</Text>
-          </View>
-        ))}
+  <View style={styles.section} key={index}>
+    <Text style={styles.sectionTitle}>{hunt.title}</Text>
+    <View style={styles.descriptionContainer}>
+      <Image source={hunt.image} style={styles.descriptionImage} />
+      <Text style={styles.sectionDescription}>{hunt.description}</Text>
+    </View>
+  </View>
+))}
+
+
         
         <View style={styles.sectionCenter}>
           <Text style={styles.centeredSectionTitle}>Medals</Text>
@@ -63,81 +68,92 @@ export function ProfileScreen() {
   );
         }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F3EFE7',
-  },
-  profileInfo: {
-    flex: 1,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  defaultProfileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  defaultProfileText: {
-    fontSize: 16,
-    color: '#456268',
-  },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 10,
-  },
-  username: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#456268',
-    marginTop: 15,
-  },
-  createHuntButton: {
-    marginTop: 10,
-    backgroundColor: '#456268',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginBottom: 40,
-  },
-  createHuntButtonText: {
-    color: 'white',
-    fontSize: 16,
-  },
-  section: {
-    marginVertical: 15,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#456268',
-    maxWidth: 300, // Exempel på maxbredd i enheter
-  },
-  sectionDescription: {
-    fontSize: 16,
-    width: 300,
-    color: '#456268',
-  },
-  sectionCenter: {
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  centeredSectionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#456268',
-  },
-  line: {
-    width: 50,
-    height: 2,
-    backgroundColor: '#456268',
-    marginVertical: 5,
-  },
-  // ... Other styles ...
-});
+        const styles = StyleSheet.create({
+          container: {
+            flex: 1,
+            backgroundColor: '#F3EFE7',
+          },
+          profileInfo: {
+            flex: 1,
+            alignItems: 'center',
+            marginTop: 20,
+          },
+          defaultProfileImage: {
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            backgroundColor: 'white',
+            justifyContent: 'center',
+            alignItems: 'center',
+          },
+          defaultProfileText: {
+            fontSize: 16,
+            color: '#456268',
+          },
+          profileImage: {
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            marginBottom: 10,
+          },
+          username: {
+            fontSize: 24,
+            fontWeight: 'bold',
+            color: '#456268',
+            marginTop: 15,
+          },
+          createHuntButton: {
+            marginTop: 10,
+            backgroundColor: '#456268',
+            paddingVertical: 10,
+            paddingHorizontal: 20,
+            borderRadius: 5,
+            marginBottom: 40,
+          },
+          createHuntButtonText: {
+            color: 'white',
+            fontSize: 16,
+          },
+          section: {
+            marginVertical: 15,
+            paddingHorizontal: 20,
+          },
+          sectionTitle: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            color: '#456268',
+            width: 300,
+          },
+          sectionDescription: {
+            fontSize: 14,
+            width: 300,
+            color: '#456268',
+          },
+          descriptionContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+          },
+          descriptionImage: {
+            width: 30,
+            height: 30,
+            borderRadius: 50,
+            marginRight: 10,
+          },
+          sectionCenter: {
+            alignItems: 'center',
+            marginVertical: 20,
+          },
+          centeredSectionTitle: {
+            fontSize: 24,
+            fontWeight: 'bold',
+            color: '#456268',
+          },
+          line: {
+            width: 50,
+            height: 2,
+            backgroundColor: '#456268',
+            marginVertical: 5,
+          },
+          // ... Other styles ...
+        });
+        
