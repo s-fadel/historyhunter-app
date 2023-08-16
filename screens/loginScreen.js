@@ -3,6 +3,7 @@ import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-nativ
 import { useNavigation } from '@react-navigation/native';
 import * as http from '../util/http';
 
+
 export function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -98,6 +99,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#456268',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 15,
   },
   loginButtonText: {
     color: 'white',
@@ -105,20 +107,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   linkContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,
   },
   signInLink: {
-    color: 'white',
+    color: 'black',
     fontSize: 18,
+    marginTop: 1,
     marginBottom: 5,
     textAlign: 'center',
   },
   signUpLink: {
-    color: 'white',
-    fontSize: 20,
+    color: 'black',
+    fontSize: 15,
     fontWeight: 'bold',
     textAlign: 'center',
   },

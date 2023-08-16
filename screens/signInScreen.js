@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ImageBackground, Animated, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ImageBackground, Animated, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as http from '../util/http';
 
@@ -18,16 +18,9 @@ export function SignInScreen() {
   }
 
 
-
-
-
   const [email, setEmail] = useState('');
-
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-
-
-
 
   const isValidEmail = (email) => {
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -54,18 +47,12 @@ export function SignInScreen() {
       return;
     }
 
-
     authentitionHandler(email, password,)
 
     console.log('Email:', email);
     console.log('Name:', name);
     console.log('Password:', password);
   };
-
-
-
-
-
 
   return (
     <View style={styles.container}>
