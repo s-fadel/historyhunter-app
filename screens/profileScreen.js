@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import ImagePicker from 'react-native-image-picker';
+import { historyHunts } from './HistoryHunterContent'; // Importera innehållet
 
 export function ProfileScreen() {
   const [profileImage, setProfileImage] = useState(null);
@@ -45,14 +46,13 @@ export function ProfileScreen() {
           <Text style={styles.createHuntButtonText}>Create Hunt</Text>
         </TouchableOpacity>
        
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Planned Hunts</Text>
-          <Text style={styles.sectionDescription}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</Text>
-        </View>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>La Hunts</Text>
-          <Text style={styles.sectionDescription}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. </Text>
-        </View>
+        {historyHunts.map((hunt, index) => (
+          <View style={styles.section} key={index}>
+            <Text style={styles.sectionTitle}>{hunt.title}</Text>
+            <Text style={styles.sectionDescription}>{hunt.description}</Text>
+          </View>
+        ))}
+        
         <View style={styles.sectionCenter}>
           <Text style={styles.centeredSectionTitle}>Medals</Text>
           <View style={styles.line} />
@@ -61,7 +61,7 @@ export function ProfileScreen() {
       {/* ... Other content ... */}
     </View>
   );
-}
+        }
 
 const styles = StyleSheet.create({
   container: {
