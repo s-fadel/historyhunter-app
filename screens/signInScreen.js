@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ImageBackground, Animated, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as http from '../util/http';
 
@@ -12,9 +12,7 @@ export function SignInScreen() {
 
   const authentitionHandler = async (email, password) => {
     console.log("authHandler", email, password)
-    // setIsAuthenticading(true) 
     await http.signupUser(email, password)
-    // setIsAuthenticading(false)
   }
 
 
@@ -47,7 +45,7 @@ export function SignInScreen() {
       return;
     }
 
-    authentitionHandler(email, password,)
+    authentitionHandler(email, password)
 
     console.log('Email:', email);
     console.log('Name:', name);
@@ -78,13 +76,13 @@ export function SignInScreen() {
         />
         <TouchableOpacity style={styles.loginButton} onPress={handleSignIn} >
 
-          <Text style={styles.loginButtonText}>SignUp</Text>
+          <Text style={styles.loginButtonText}>Sign up</Text>
 
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('login')}>
 
 
-          <Text style={styles.signInLink}>Login Here!</Text>
+          <Text style={styles.signInLink}>Login here</Text>
 
 
         </TouchableOpacity>
@@ -142,8 +140,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#456268',
-
     marginBottom: 20,
+
+  },
+  signInLink: {
+    fontWeight: 'bold',
+    color: '#456268',
+    marginTop: 20,
 
   },
 });

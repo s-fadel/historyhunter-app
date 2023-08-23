@@ -1,72 +1,88 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import ImagePicker from 'react-native-image-picker';
+import { Camera } from 'expo-camera';
 import { historyHunts } from './HistoryHunterContent'; // Importera innehållet
 
 export function ProfileScreen() {
   const [profileImage, setProfileImage] = useState(null);
+  const [hasPermission, setHasPermission] = useState(null);
+  const [cameraRef, setCameraRef] = useState(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
-  const handleImagePicker = () => {
-    const options = {
-      title: 'Select Profile Picture',
-      mediaType: 'photo',
-      storageOptions: {
-        skipBackup: true,
-        path: 'images',
-      },
-      quality: 0.7,
-    };
+  const handleCameraLaunch = async () => {
+    const { status } = await Camera.requestPermissionsAsync();
+    if (status === 'granted') {
+      setHasPermission(true);
+      setIsCameraOpen(true);
+    } else {
+      setHasPermission(false);
+      setIsCameraOpen(false);
+    }
+  };
 
-    ImagePicker.launchImageLibrary(options, (response) => {
-      if (response.didCancel) {
-        // User cancelled image selection
-      } else if (response.error) {
-        // Image selection error
-      } else {
-        // Set the selected image as the profile image
-        setProfileImage(response.uri);
-      }
-    });
+  const handleCapture = async () => {
+    if (cameraRef) {
+      const photo = await cameraRef.takePictureAsync();
+      setProfileImage(photo.uri);
+      setIsCameraOpen(false);
+    }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.profileInfo}>
-        <TouchableOpacity onPress={handleImagePicker}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.defaultProfileImage}>
-              <Text style={styles.defaultProfileText}>Add Photo</Text>
+        {!isCameraOpen && (
+          <TouchableOpacity onPress={handleCameraLaunch}>
+            <View style={styles.profileImageContainer}>
+              {profileImage ? (
+                <Image source={{ uri: profileImage }} style={styles.profileImage} />
+              ) : (
+                <View style={styles.defaultProfileImage}>
+                  <Text style={styles.defaultProfileText}>Add Photo</Text>
+                </View>
+              )}
             </View>
-          )}
-        </TouchableOpacity>
+          </TouchableOpacity>
+        )}
+
+        {isCameraOpen && (
+          <Camera
+            style={styles.camera}
+            ref={(ref) => setCameraRef(ref)}
+            type={Camera.Constants.Type.back}
+          >
+            <View style={styles.captureContainer}>
+             
+            </View>
+            <TouchableOpacity style={styles.captureButton} onPress={handleCapture}>
+           <Text style={styles.captureButtonText}>Capture</Text>
+         </TouchableOpacity>
+          </Camera>
+           
+        )}
+
         <Text style={styles.username}>John Doe</Text>
         <TouchableOpacity style={styles.createHuntButton}>
           <Text style={styles.createHuntButtonText}>Create Hunt</Text>
         </TouchableOpacity>
-       
         {historyHunts.map((hunt, index) => (
-  <View style={styles.section} key={index}>
-    <Text style={styles.sectionTitle}>{hunt.title}</Text>
-    <View style={styles.descriptionContainer}>
-      <Image source={hunt.image} style={styles.descriptionImage} />
-      <Text style={styles.sectionDescription}>{hunt.description}</Text>
-    </View>
-  </View>
-))}
-
-
-        
+          <View style={styles.section} key={index}>
+            <Text style={styles.sectionTitle}>{hunt.title}</Text>
+            <View style={styles.descriptionContainer}>
+              <Image source={hunt.image} style={styles.descriptionImage} />
+              <Text style={styles.sectionDescription}>{hunt.description}</Text>
+            </View>
+          </View>
+        ))}
         <View style={styles.sectionCenter}>
           <Text style={styles.centeredSectionTitle}>Medals</Text>
           <View style={styles.line} />
         </View>
       </View>
-      {/* ... Other content ... */}
     </View>
   );
-        }
+}
+
 
         const styles = StyleSheet.create({
           container: {
@@ -77,6 +93,34 @@ export function ProfileScreen() {
             flex: 1,
             alignItems: 'center',
             marginTop: 20,
+          },
+          profileImageContainer: {
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            overflow: 'hidden',
+          },
+          camera: {
+            width: 300,
+            height: 300,
+          },
+          captureContainer: {
+            flex: 1,
+            alignItems: 'center',
+            marginBottom: 20,
+
+          },
+          captureButton: {
+            backgroundColor: '#456268',
+            padding: 20,
+            alignItems: 'center',
+
+          },
+          captureButtonText: {
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: 18,
+
           },
           defaultProfileImage: {
             width: 120,
@@ -154,6 +198,5 @@ export function ProfileScreen() {
             backgroundColor: '#456268',
             marginVertical: 5,
           },
-          // ... Other styles ...
         });
         

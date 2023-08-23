@@ -10,8 +10,17 @@ export function LoginScreen() {
   const navigation = useNavigation();
 
   const authentitionHandler = async (email, password) => {
-    const data = await http.signinUser(email, password);
-    return data;
+    try {
+      console.log('email', email);
+      console.log('password',password);
+      const resp = await http.signinUser(email, password);
+
+      console.log('API Response:', resp); // Logga hela API-svaret
+      return resp;
+    } catch (error) {
+      console.error('API Error:', error); // Logga eventuella fel
+      throw error; // Kasta om felet för att hantera det senare
+    }
   };
 
   const handleLogin = async () => {
@@ -21,6 +30,7 @@ export function LoginScreen() {
     } else {
       Alert.alert('Login Failed', 'Invalid email or password.');
     }
+    
   };
 
   return (
