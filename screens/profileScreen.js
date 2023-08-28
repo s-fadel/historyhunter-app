@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Camera } from 'expo-camera';
 import { historyHunts } from './HistoryHunterContent'; // Importera innehållet
 import { useNavigation } from '@react-navigation/native';
-
+import { AuthContext } from '../storage/AuthContext';
+import * as http from '../util/http';
 
 export function ProfileScreen() {
   const navigation = useNavigation();
@@ -12,6 +13,8 @@ export function ProfileScreen() {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+
+  const authCtx = useContext(AuthContext);
 
   const handleCameraLaunch = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
@@ -32,38 +35,62 @@ export function ProfileScreen() {
     }
   };
 
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userData = await http.getUserById(authCtx.token); // Fetch user from Firebase
+        const foundUser = userData.find(u => u.email.toLowerCase() === authCtx.email.toLowerCase()); // Modify according to your data structure
+
+        if (foundUser) {
+          setUsername(foundUser.displayName);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
   return (
+  
     <View style={styles.container}>
-      <View style={styles.profileInfo}>
-        {!isCameraOpen && (
-          <TouchableOpacity onPress={handleCameraLaunch}>
-            <View style={styles.profileImageContainer}>
-              {profileImage ? (
-                <Image source={{ uri: profileImage }} style={styles.profileImage} />
-              ) : (
-                <View style={styles.defaultProfileImage}>
-                  <Text style={styles.defaultProfileText}>Add Photo</Text>
-                </View>
-              )}
-            </View>
+<View style={styles.profileInfo}>
+  {!isCameraOpen && (
+    <View style={styles.profileImageContainer}>
+      <TouchableOpacity onPress={handleCameraLaunch}>
+        {profileImage ? (
+          <Image source={{ uri: profileImage }} style={styles.profileImage} />
+        ) : (
+          <View style={styles.defaultProfileImage}>
+            <Text style={styles.defaultProfileText}>Add Photo</Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    </View>
+  )}
+
+  {isCameraOpen && (
+    <Camera
+      style={styles.camera}
+      ref={(ref) => setCameraRef(ref)}
+      type={Camera.Constants.Type.back}
+    >
+      <View style={styles.cameraContent}>
+        <View style={styles.cameraCaptureContainer}>
+          <TouchableOpacity style={styles.captureButton} onPress={handleCapture}>
+            <Text style={styles.captureButtonText}>Capture</Text>
           </TouchableOpacity>
-        )}
+        </View>
+      </View>
+    </Camera>
+  )}
 
-        {isCameraOpen && (
-          <Camera
-            style={styles.camera}
-            ref={(ref) => setCameraRef(ref)}
-            type={Camera.Constants.Type.back}
-          >
-            <View style={styles.captureContainer}>
-              <TouchableOpacity style={styles.captureButton} onPress={handleCapture}>
-                <Text style={styles.captureButtonText}>Capture</Text>
-              </TouchableOpacity>
-            </View>
-          </Camera>
-        )}
 
-        <Text style={styles.username}>John Doe</Text>
+<Text style={styles.username}>{username}</Text>
+
         <TouchableOpacity style={styles.createHuntButton} onPress={() => navigation.navigate('createHunt')}>
           <Text style={styles.createHuntButtonText}>Create Hunt</Text>
         </TouchableOpacity>
