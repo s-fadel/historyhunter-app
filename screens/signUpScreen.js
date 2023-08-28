@@ -6,19 +6,35 @@ import * as http from '../util/http';
 
 
 
-export function SignInScreen() {
+export function SignUpScreen() {
+  const [email, setEmail] = useState('');
+
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [token, setToken] = useState(null);
+
   const navigation = useNavigation();
   const [isAuthenticading, setIsAuthenticading] = useState(false)
 
+
   const authentitionHandler = async (email, password) => {
-    console.log("authHandler", email, password)
-    await http.signupUser(email, password)
-  }
+    try {
+      const istoken = await http.signupUser(email, password);
+      const data = await http.updateUser(name, istoken);
+  
+      const userData = {
+        email: email,
+        username: name,
+        userUUID: data
+      };
+  
+      await http.storeUser(userData);
+
+    } catch (error) {
+      console.error('Error during authentication:', error);
+    }}
 
 
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
 
   const isValidEmail = (email) => {
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -45,12 +61,11 @@ export function SignInScreen() {
       return;
     }
 
-    authentitionHandler(email, password)
+    authentitionHandler(email, password,)
+    navigation.navigate('login', { name: name, token: token }); // Pass the 'name' parameter here
 
-    console.log('Email:', email);
-    console.log('Name:', name);
-    console.log('Password:', password);
   };
+
 
   return (
     <View style={styles.container}>

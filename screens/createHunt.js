@@ -16,7 +16,7 @@ export function CreateHuntScreen() {
     } else {
 
       // Navigate to the next screen
-      navigation.navigate("inviteFriend");
+      navigation.navigate("inviteFriends");
     }
     const hunt = {
       duration: huntDuration,
@@ -55,9 +55,10 @@ export function CreateHuntScreen() {
       )}
 
       <View style={styles.centeredContainer}>
-        <TouchableOpacity style={styles.loginButton} onPress={handleContinue}>
-          <Text style={styles.loginButtonText}>Continue</Text>
-        </TouchableOpacity>
+      <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('map')}>
+  <Text style={styles.loginButtonText}>Continue</Text>
+</TouchableOpacity>
+
       </View>
     </View>
   );
