@@ -5,6 +5,7 @@ import { historyHunts } from './HistoryHunterContent'; // Importera innehållet
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../storage/AuthContext';
 import * as http from '../util/http';
+import { EvilIcons } from '@expo/vector-icons';
 
 export function ProfileScreen() {
   const navigation = useNavigation();
@@ -81,7 +82,7 @@ export function ProfileScreen() {
       <View style={styles.cameraContent}>
         <View style={styles.cameraCaptureContainer}>
           <TouchableOpacity style={styles.captureButton} onPress={handleCapture}>
-            <Text style={styles.captureButtonText}>Capture</Text>
+          <EvilIcons name="camera" size={40} color="white"/>
           </TouchableOpacity>
         </View>
       </View>
@@ -129,9 +130,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   camera: {
-    width: 300,
-    height: 300,
-    borderRadius: 150,
+    width: 200 ,
+    height: 200,
+    borderRadius: 100,
   },
   captureContainer: {
     flex: 1,
@@ -140,12 +141,14 @@ const styles = StyleSheet.create({
   },
   captureButton: {
     backgroundColor: '#456268',
-    padding: 20,
     alignItems: 'center',
+    width: 70,
+    height: 70,
+    borderRadius: 50,
+    justifyContent: 'center',
   },
   captureButtonText: {
     color: 'white',
-    fontWeight: 'bold',
     fontSize: 18,
   },
   defaultProfileImage: {
