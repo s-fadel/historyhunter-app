@@ -1,19 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as http from '../util/http';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContext } from '../storage/AuthContext';
 
-
-export function LoginScreen() {
+export function LoginScreen({route}) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
+
+  const authCtx = useContext(AuthContext);
 
   const authentitionHandler = async (email, password) => {
     try {
       console.log('email', email);
       console.log('password',password);
-      const resp = await http.signinUser(email, password);
+
+      const resp = await http.signinUser(email, password); // resp är token
+
+      authCtx.authenticate(resp, email);
+
+      console.log("authContext TOKEN", authCtx.token);
 
       console.log('API Response:', resp); // Logga hela API-svaret
       return resp;
@@ -23,14 +31,34 @@ export function LoginScreen() {
     }
   };
 
+
+
+
   const handleLogin = async () => {
+    const { name } = route.params || {};
+    console.log('TEST', name)
+
+    const storeUserData = async (name, token) => {
+      try {
+        await AsyncStorage.setItem('username', name);
+        await AsyncStorage.setItem('token', token);
+      } catch (error) {
+        console.error('Error storing user data:', error);
+      }
+    };
+
+    
     const isAuthenticated = await authentitionHandler(username, password);
+    console.log("AUTHENTICATE", isAuthenticated);
+
     if (isAuthenticated) {
-      navigation.navigate('profile');
+      const token = isAuthenticated.token; // Retrieve the token from the returned data
+      storeUserData(name, token);
+      navigation.navigate('profile', { name: username });
+      console.log('namnet', name);
     } else {
       Alert.alert('Login Failed', 'Invalid email or password.');
     }
-    
   };
 
   return (
