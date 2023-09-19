@@ -53,8 +53,10 @@ export function LoginScreen({route}) {
 
     if (isAuthenticated) {
       const token = isAuthenticated.token; // Retrieve the token from the returned data
-      storeUserData(name, token);
-      navigation.navigate('profile', { name: username });
+      console.log('token', token);
+
+/*       storeUserData(username, token);
+ */      navigation.navigate('profile', { name: username });
       console.log('namnet', name);
     } else {
       Alert.alert('Login Failed', 'Invalid email or password.');
