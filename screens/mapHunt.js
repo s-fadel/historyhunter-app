@@ -175,12 +175,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonFinish: {
-    backgroundColor: "green",
+    backgroundColor: "#456268",
     padding: 25,
     alignItems: "center",
   },
   buttonCancel: {
-    backgroundColor: "red",
+    backgroundColor: "#0e3740",
     padding: 25,
     alignItems: "center",
   },
