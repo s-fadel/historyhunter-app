@@ -6,8 +6,11 @@ import { SignUpScreen } from "./screens/signUpScreen";
 import { ProfileScreen } from "./screens/profileScreen";
 import { CreateHuntScreen } from "./screens/createHunt";
 import { InviteFriendsScreen } from "./screens/inviteFriendsScreen";
-import { MapHuntScreen } from "./screens/mapHunt"; // Importera MapHunt-skärmen
+import { MapHuntScreen } from "./screens/mapHunt"; 
+import { OverviewMap } from "./screens/overviewMap"; 
+
 import AuthContextProvider from "./storage/AuthContext";
+
 
 export default function App() {
   const Stack = createStackNavigator();
@@ -22,6 +25,8 @@ export default function App() {
           <Stack.Screen name="createHunt" component={CreateHuntScreen} />
           <Stack.Screen name="inviteFriends" component={InviteFriendsScreen} />
           <Stack.Screen name="map" component={MapHuntScreen} /> 
+          <Stack.Screen name="overviewMap" component={OverviewMap} /> 
+
         </Stack.Navigator>
       </AuthContextProvider>
     </NavigationContainer>
