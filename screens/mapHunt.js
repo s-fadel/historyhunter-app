@@ -1,33 +1,35 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import MapView, { Marker, Polyline } from "react-native-maps";
-import { getHunt, storeHunt } from "../util/http";
+import MapView, { Marker } from "react-native-maps";
+import { storeHunt } from "../util/http";
 import * as Location from "expo-location";
+import * as ImagePicker from "expo-image-picker"; // Importera ImagePicker
 import { useRoute, useNavigation } from "@react-navigation/native";
+import { AuthContext } from "../storage/AuthContext";
 
 export function MapHuntScreen() {
-  const [huntData, setHuntData] = useState(null); // State för jakten
+  const [huntData, setHuntData] = useState(null);
   const route = useRoute();
   const navigation = useNavigation();
-  const [userLocation, setUserLocation] = useState(null); // State för användarens position
-  const [selectedDestination, setSelectedDestination] = useState(null); // State för den valda destinationen
-  const [routePoints, setRoutePoints] = useState([]); // State för att lagra punkter på kartan
-  const [addingDestination, setAddingDestination] = useState(false); // State för att lägga till destinationer
+  const [userLocation, setUserLocation] = useState(null);
+  const [selectedDestination, setSelectedDestination] = useState(null);
+  const [addingDestination, setAddingDestination] = useState(false);
+  const [destinationMarkers, setDestinationMarkers] = useState([]); // State för att lagra markerade destinationer
+  console.log(destinationMarkers, "destinationMarkers");
 
-  // Funktion för att hämta jaktdetaljer
-  const fetchHuntDetails = async () => {
+  const authCtx = useContext(AuthContext);
+
+  const storeHuntDetails = async (routeToStore) => {
     try {
-      const huntDetails = await getHunt(); // Anropa funktionen från http.js
-      setHuntData(huntDetails);
+      const storedHunt = await storeHunt(routeToStore);
+      return storedHunt;
     } catch (error) {
       console.error("Error fetching hunt details:", error);
     }
   };
 
-  // Funktion för att hämta användarens position
   const fetchUserLocation = async () => {
     try {
-      // Implementera logiken för att hämta användarens position här, t.ex. med Expo Location API
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === "granted") {
         const location = await Location.getCurrentPositionAsync();
@@ -44,43 +46,36 @@ export function MapHuntScreen() {
   };
 
   useEffect(() => {
-    // Anropa funktioner för att hämta jaktdetaljer och användarens position
-    fetchHuntDetails();
     fetchUserLocation();
 
     const { hunt } = route.params;
     if (hunt) {
       setHuntData(hunt);
     }
-  }, []);
+  }, [route.params]);
 
-  // Lägg till en funktion för att markera en destination när användaren klickar på kartan
   const handleMapPress = (event) => {
     if (addingDestination) {
       const newDestination = {
         latitude: event.nativeEvent.coordinate.latitude,
         longitude: event.nativeEvent.coordinate.longitude,
       };
-
-      // Lägg till den markerade destinationen i state
-      setRoutePoints([...routePoints, newDestination]);
+      setDestinationMarkers([...destinationMarkers, newDestination]);
     }
   };
 
-  // Lägg till en knapp för att bekräfta och skapa rutten
   const handleConfirmRoute = () => {
-    if (routePoints.length > 1) {
-      // Skapa rutten med de markerade destinationerna och andra uppgifter
+    if (destinationMarkers.length > 1) {
       const routeToStore = {
         name: huntData.name,
         duration: huntData.duration,
-        destinations: routePoints,
-        days: huntData.duration,
+        destinations: destinationMarkers,
+        userId: authCtx.email,
+        activeHunt: false,
       };
-
-      // Lagra rutten i Firebase eller din valda lagringstjänst
-      // Navigera till översiktsvyn eller gör andra relevanta åtgärder
-      navigation.navigate("OverviewScreen", { route: routeToStore });
+      console.log(huntData, "HUNTDATA-NY");
+      storeHuntDetails(routeToStore);
+      navigation.navigate("profile", { route: routeToStore });
     } else {
       console.error("Incomplete route configuration");
     }
@@ -97,9 +92,8 @@ export function MapHuntScreen() {
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
-          onPress={handleMapPress} // Anropa funktionen när användaren trycker på kartan
+          onPress={handleMapPress}
         >
-          {/* Visa användarens position på kartan */}
           <Marker
             coordinate={{
               latitude: userLocation.latitude,
@@ -108,7 +102,6 @@ export function MapHuntScreen() {
             title="Din position"
           />
 
-          {/* Visa markörer för destinationer om jakten finns */}
           {huntData &&
             huntData.destinations &&
             huntData.destinations.map((destination, index) => (
@@ -123,18 +116,19 @@ export function MapHuntScreen() {
               />
             ))}
 
-          {/* Visa rutt mellan de valda punkterna */}
-          {routePoints.length > 1 && (
-            <Polyline
-              coordinates={routePoints}
-              strokeWidth={3}
-              strokeColor="blue"
+          {/* Lägg till röda markörer för de markerade destinationerna */}
+          {destinationMarkers.map((destination, index) => (
+            <Marker
+              key={index}
+              coordinate={destination}
+              title="Röd markör"
+              pinColor="red"
+              //onPress={() => openCamera(destination)} // Öppna kameran när användaren klickar på markören
             />
-          )}
+          ))}
         </MapView>
       )}
 
-      {/* Visa knapp för att lägga till destination */}
       {!addingDestination && (
         <TouchableOpacity onPress={() => setAddingDestination(true)}>
           <View style={styles.buttonAdd}>
@@ -143,8 +137,7 @@ export function MapHuntScreen() {
         </TouchableOpacity>
       )}
 
-      {/* Visa knapp för att bekräfta och skapa rutten */}
-      {routePoints.length > 1 && (
+      {destinationMarkers.length > 1 && (
         <TouchableOpacity onPress={handleConfirmRoute}>
           <View style={styles.buttonFinish}>
             <Text style={styles.buttonText}>Bekräfta rutten</Text>
@@ -152,7 +145,6 @@ export function MapHuntScreen() {
         </TouchableOpacity>
       )}
 
-      {/* Visa knapp för att avbryta läget att lägga till destination */}
       {addingDestination && (
         <TouchableOpacity onPress={() => setAddingDestination(false)}>
           <View style={styles.buttonCancel}>
@@ -185,7 +177,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonText: {
-    color: 'white',
-    fontWeight: 'bold'
-  }
+    color: "white",
+    fontWeight: "bold",
+  },
 });
