@@ -6,14 +6,15 @@ import {
   StyleSheet,
   Modal,
   Button,
+  Image,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { storeHunt } from "../util/http";
 import * as Location from "expo-location";
-import * as ImagePicker from "expo-image-picker"; // Importera ImagePicker
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../storage/AuthContext";
 import { Camera } from "expo-camera";
+import { EvilIcons } from "@expo/vector-icons";
 
 export function MapHuntScreen() {
   const [huntData, setHuntData] = useState(null);
@@ -26,7 +27,11 @@ export function MapHuntScreen() {
   const { hideDestinationBtn } = route.params;
   const [confirmationModalVisible, setConfirmationModalVisible] =
     useState(false);
-    const [cameraVisible, setCameraVisible] = useState(false);
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [cameraRef, setCameraRef] = useState(null);
+  const [previewConfirmPlace, setPreviewConfirmPlace] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+  const [remainingDestinations, setRemainingDestinations] = useState(0);
 
   const authCtx = useContext(AuthContext);
 
@@ -64,6 +69,7 @@ export function MapHuntScreen() {
     const { hunt } = route.params;
     if (hunt) {
       setHuntData(hunt);
+      setRemainingDestinations(hunt.destinations.length);
     }
   }, [route.params]);
 
@@ -100,17 +106,19 @@ export function MapHuntScreen() {
   };
 
   const handleCapture = async () => {
-    if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync();
-      setCapturedImage(photo.uri);
-  
-      // Här kan du göra något med den tagna bilden, om du behöver
+    console.log(cameraRef);
+    if (cameraRef) {
+      const photo = await cameraRef.takePictureAsync();
+      setProfileImage(photo.uri);
+      setRemainingDestinations((prevCount) => prevCount - 1);
     }
-  };
-  
 
-  
- return (
+    setCameraVisible(false);
+    setConfirmationModalVisible(true);
+    setPreviewConfirmPlace(true);
+  };
+
+  return (
     <View style={styles.container}>
       {userLocation && (
         <MapView
@@ -161,20 +169,23 @@ export function MapHuntScreen() {
           ))}
         </MapView>
       )}
-    {/* Visa kameran när användaren klickar på "Ja" */}
-    {cameraVisible && (
+      {/* Visa kameran när användaren klickar på "Ja" */}
+      {cameraVisible && (
         <View style={styles.cameraContainer}>
           <Camera
             style={styles.camera}
             type={Camera.Constants.Type.back}
+            ref={(ref) => setCameraRef(ref)}
           >
             <View style={styles.cameraContent}>
-              <TouchableOpacity
-                style={styles.captureButton}
-                onPress={handleCapture}
-              >
-                <Text style={styles.captureButtonText}>Ta bild</Text>
-              </TouchableOpacity>
+              <View style={styles.cameraCaptureContainer}>
+                <TouchableOpacity
+                  style={styles.captureButton}
+                  onPress={handleCapture}
+                >
+                  <EvilIcons name="camera" size={40} color="white" />
+                </TouchableOpacity>
+              </View>
             </View>
           </Camera>
         </View>
@@ -187,17 +198,46 @@ export function MapHuntScreen() {
           transparent={true}
           visible={confirmationModalVisible}
         >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Bekräfta ankomst</Text>
-              <Text style={styles.modalText}>Har du nått din destination?</Text>
-              <Button title="Ja" onPress={handleOpenCameraModal} />
-              <Button
-                title="Nej"
-                onPress={() => setConfirmationModalVisible(false)}
-              />
+          {!previewConfirmPlace && (
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Bekräfta ankomst</Text>
+                <Text style={styles.modalText}>
+                  Har du nått din destination?
+                </Text>
+                <Button title="Ja" onPress={handleOpenCameraModal} />
+                <Button
+                  title="Nej"
+                  onPress={() => setConfirmationModalVisible(false)}
+                />
+              </View>
             </View>
-          </View>
+          )}
+          {previewConfirmPlace && (
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>NICE PIC!</Text>
+                {profileImage && (
+                  <Image
+                    source={{ uri: profileImage }}
+                    style={styles.profileImage}
+                  />
+                )}
+                <Text style={styles.modalTitle}>
+                  {" "}
+                  {remainingDestinations} destionations left
+                </Text>
+
+                <Button
+                  title="Confirm"
+                  onPress={() => {
+                    setConfirmationModalVisible(false);
+                    setPreviewConfirmPlace(false);
+                  }}
+                />
+              </View>
+            </View>
+          )}
         </Modal>
       )}
 
@@ -287,7 +327,7 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: "white",
     borderRadius: 10,
-    padding: 20,
+    padding: 50,
     alignItems: "center",
   },
   modalTitle: {
@@ -298,5 +338,16 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 16,
     marginBottom: 20,
+  },
+  capturedImage: {
+    width: 200,
+    height: 200,
+    marginVertical: 10,
+  },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 10,
   },
 });
