@@ -1,11 +1,19 @@
 import React, { useState, useEffect, useContext } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+  Button,
+} from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { storeHunt } from "../util/http";
 import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker"; // Importera ImagePicker
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../storage/AuthContext";
+import { Camera } from "expo-camera";
 
 export function MapHuntScreen() {
   const [huntData, setHuntData] = useState(null);
@@ -14,12 +22,15 @@ export function MapHuntScreen() {
   const [userLocation, setUserLocation] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [addingDestination, setAddingDestination] = useState(false);
-  const [destinationMarkers, setDestinationMarkers] = useState([]); 
-  const {hideDestinationBtn} = route.params;
+  const [destinationMarkers, setDestinationMarkers] = useState([]);
+  const { hideDestinationBtn } = route.params;
+  const [confirmationModalVisible, setConfirmationModalVisible] =
+    useState(false);
+    const [cameraVisible, setCameraVisible] = useState(false);
 
   const authCtx = useContext(AuthContext);
 
-  console.log(hideDestinationBtn, 'HIDEBTN');
+  console.log(hideDestinationBtn, "HIDEBTN");
 
   const storeHuntDetails = async (routeToStore) => {
     try {
@@ -83,7 +94,23 @@ export function MapHuntScreen() {
     }
   };
 
-  return (
+  const handleOpenCameraModal = () => {
+    setConfirmationModalVisible(false); // Stäng den befintliga modalen
+    setCameraVisible(true); // Visa kameran
+  };
+
+  const handleCapture = async () => {
+    if (cameraRef.current) {
+      const photo = await cameraRef.current.takePictureAsync();
+      setCapturedImage(photo.uri);
+  
+      // Här kan du göra något med den tagna bilden, om du behöver
+    }
+  };
+  
+
+  
+ return (
     <View style={styles.container}>
       {userLocation && (
         <MapView
@@ -114,7 +141,12 @@ export function MapHuntScreen() {
                   longitude: destination.longitude,
                 }}
                 title={destination.name}
-                onPress={() => setSelectedDestination(destination)}
+                onPress={() => {
+                  setSelectedDestination(destination);
+                  if (hideDestinationBtn) {
+                    setConfirmationModalVisible(true);
+                  }
+                }}
               />
             ))}
 
@@ -125,13 +157,51 @@ export function MapHuntScreen() {
               coordinate={destination}
               title="Röd markör"
               pinColor="red"
-              //onPress={() => openCamera(destination)} // Öppna kameran när användaren klickar på markören
             />
           ))}
         </MapView>
       )}
+    {/* Visa kameran när användaren klickar på "Ja" */}
+    {cameraVisible && (
+        <View style={styles.cameraContainer}>
+          <Camera
+            style={styles.camera}
+            type={Camera.Constants.Type.back}
+          >
+            <View style={styles.cameraContent}>
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={handleCapture}
+              >
+                <Text style={styles.captureButtonText}>Ta bild</Text>
+              </TouchableOpacity>
+            </View>
+          </Camera>
+        </View>
+      )}
 
-      {!hideDestinationBtn && !addingDestination &&  (
+      {/* Visa din befintliga modal när användaren inte har öppnat kameran */}
+      {!cameraVisible && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={confirmationModalVisible}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Bekräfta ankomst</Text>
+              <Text style={styles.modalText}>Har du nått din destination?</Text>
+              <Button title="Ja" onPress={handleOpenCameraModal} />
+              <Button
+                title="Nej"
+                onPress={() => setConfirmationModalVisible(false)}
+              />
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {!hideDestinationBtn && !addingDestination && (
         <TouchableOpacity onPress={() => setAddingDestination(true)}>
           <View style={styles.buttonAdd}>
             <Text style={styles.buttonText}>Lägg till destination</Text>
@@ -163,6 +233,32 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F3EFE7",
   },
+  cameraContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  camera: {
+    width: "100%",
+    height: "100%",
+  },
+  cameraContent: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  captureButton: {
+    backgroundColor: "#456268",
+    alignItems: "center",
+    width: 70,
+    height: 70,
+    borderRadius: 50,
+    justifyContent: "center",
+    marginBottom: 40,
+  },
+  captureButtonText: {
+    color: "white",
+    fontSize: 18,
+  },
   buttonAdd: {
     backgroundColor: "#456268",
     padding: 25,
@@ -181,5 +277,26 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 20,
   },
 });

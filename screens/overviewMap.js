@@ -1,20 +1,20 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, {useState} from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Button } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import MapView, { Marker } from "react-native-maps";
 
 export function OverviewMap() {
+
   const route = useRoute();
   const { hunt } = route.params;
   const navigation = useNavigation();
-
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Confirm Hunt</Text>
       <Text style={styles.subtitle}>You picked:</Text>
       <Text style={styles.huntName}>{hunt.name}</Text>
-  
+
       <MapView
         style={styles.map}
         initialRegion={{
@@ -35,22 +35,22 @@ export function OverviewMap() {
           />
         ))}
       </MapView>
-  
+
+
       <View style={styles.durationContainer}>
         <Text style={styles.durationLabel}>This should take about:</Text>
         <Text style={styles.durationValue}>{hunt.duration} minutes</Text>
       </View>
-  
+
       {/* Lägg till Confirm-knappen */}
       <TouchableOpacity
         style={styles.confirmButton}
-        onPress={() => navigation.navigate("map", { hunt: hunt })}
+        onPress={() => navigation.navigate("map", { hunt: hunt, hideDestinationBtn: true, })}
       >
         <Text style={styles.confirmButtonText}>Confirm</Text>
       </TouchableOpacity>
     </View>
   );
-  
 }
 
 const styles = StyleSheet.create({
@@ -110,5 +110,4 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
-  
 });
