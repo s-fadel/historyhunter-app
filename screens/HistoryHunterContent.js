@@ -1,12 +1,12 @@
 export const historyHunts = [
     {
-      title: "Active Hunts",
-      description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      title: "Planned Hunts",
+      description: "See your planned hunts",
       image: require('../assets/cookies.jpg'), // Ange sökvägen till bilden
     },
     {
-      title: "Planned Hunts",
-      description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+      title: "Active Hunts",
+      description: "See your active hunts",
       image: require('../assets/cookies.jpg'), // Ange sökvägen till bilden
     },
   ];
