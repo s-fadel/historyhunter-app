@@ -1,65 +1,50 @@
-import React, { useState, useContext } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import * as http from '../util/http';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AuthContext } from '../storage/AuthContext';
+import React, { useState, useContext } from "react";
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import * as http from "../util/http";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthContext } from "../storage/AuthContext";
 
-export function LoginScreen({route}) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+export function LoginScreen({ route }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const navigation = useNavigation();
 
   const authCtx = useContext(AuthContext);
 
   const authentitionHandler = async (email, password) => {
     try {
-      console.log('email', email);
-      console.log('password',password);
-
       const resp = await http.signinUser(email, password); // resp är token
-
       authCtx.authenticate(resp, email);
-
-      console.log("authContext TOKEN", authCtx.token);
-
-      console.log('API Response:', resp); // Logga hela API-svaret
       return resp;
     } catch (error) {
-      console.error('API Error:', error); // Logga eventuella fel
       throw error; // Kasta om felet för att hantera det senare
     }
   };
-
-
-
-
   const handleLogin = async () => {
     const { name } = route.params || {};
-    console.log('TEST', name)
-
     const storeUserData = async (name, token) => {
       try {
-        await AsyncStorage.setItem('username', name);
-        await AsyncStorage.setItem('token', token);
+        await AsyncStorage.setItem("username", name);
+        await AsyncStorage.setItem("token", token);
       } catch (error) {
-        console.error('Error storing user data:', error);
+        console.error("Error storing user data:", error);
       }
     };
 
-    
     const isAuthenticated = await authentitionHandler(username, password);
-    console.log("AUTHENTICATE", isAuthenticated);
 
     if (isAuthenticated) {
-      const token = isAuthenticated.token; // Retrieve the token from the returned data
-      console.log('token', token);
-
-/*       storeUserData(username, token);
- */      navigation.navigate('profile', { name: username });
-      console.log('namnet', name);
+      const token = isAuthenticated.token; 
+      navigation.navigate("profile", { name: username });
     } else {
-      Alert.alert('Login Failed', 'Invalid email or password.');
+      Alert.alert("Login Failed", "Invalid email or password.");
     }
   };
 
@@ -84,7 +69,7 @@ export function LoginScreen({route}) {
         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.loginButtonText}>Log In</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+        <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
           <View style={styles.linkContainer}>
             <Text style={styles.signInLink}>Need to create an account?</Text>
             <Text style={styles.signUpLink}>Sign Up Here</Text>
@@ -98,27 +83,27 @@ export function LoginScreen({route}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F3EFE7',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F3EFE7",
   },
   headerText: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#456268',
+    fontWeight: "bold",
+    color: "#456268",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   loginTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   formContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   input: {
@@ -126,8 +111,8 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#A39480',
-    backgroundColor: 'white',
+    borderColor: "#A39480",
+    backgroundColor: "white",
     marginBottom: 15,
     paddingHorizontal: 15,
     fontSize: 18,
@@ -136,15 +121,15 @@ const styles = StyleSheet.create({
     width: 200,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#456268',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#456268",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 15,
   },
   loginButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   linkContainer: {
     paddingVertical: 10,
@@ -152,17 +137,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   signInLink: {
-    color: 'black',
+    color: "black",
     fontSize: 18,
     marginTop: 1,
     marginBottom: 5,
-    textAlign: 'center',
+    textAlign: "center",
   },
   signUpLink: {
-    color: 'black',
+    color: "black",
     fontSize: 15,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
 
