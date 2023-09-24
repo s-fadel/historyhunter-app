@@ -14,10 +14,12 @@ export function MapHuntScreen() {
   const [userLocation, setUserLocation] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [addingDestination, setAddingDestination] = useState(false);
-  const [destinationMarkers, setDestinationMarkers] = useState([]); // State för att lagra markerade destinationer
-  console.log(destinationMarkers, "destinationMarkers");
+  const [destinationMarkers, setDestinationMarkers] = useState([]); 
+  const {hideDestinationBtn} = route.params;
 
   const authCtx = useContext(AuthContext);
+
+  console.log(hideDestinationBtn, 'HIDEBTN');
 
   const storeHuntDetails = async (routeToStore) => {
     try {
@@ -129,7 +131,7 @@ export function MapHuntScreen() {
         </MapView>
       )}
 
-      {!addingDestination && (
+      {!hideDestinationBtn && !addingDestination &&  (
         <TouchableOpacity onPress={() => setAddingDestination(true)}>
           <View style={styles.buttonAdd}>
             <Text style={styles.buttonText}>Lägg till destination</Text>
