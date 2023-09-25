@@ -81,8 +81,6 @@ export const getHunt = async (userId) => {
     console.log("resp-GETHUNT", matchingHunts);
     return matchingHunts;
   } catch (error) {
-    console.error('Error fetching hunt data:', error);
-    throw error;
   }
 };
 
