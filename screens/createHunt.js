@@ -49,7 +49,7 @@ export function CreateHuntScreen() {
         <Text style={styles.question}>How long should it be?</Text>
         <TextInput
           style={styles.answerField}
-          placeholder="3 hours? 2 days? You pick"
+          placeholder="Would you like 10min, 30min? You pick"
           value={huntDuration}
           onChangeText={(text) => setHuntDuration(text)}
         />
