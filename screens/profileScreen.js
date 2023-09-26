@@ -7,6 +7,7 @@ import * as http from "../util/http";
 import { EvilIcons } from "@expo/vector-icons";
 import { getHunt } from "../util/http";
 import { historyHunts } from "./HistoryHunterContent";
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 export function ProfileScreen() {
   const navigation = useNavigation();
@@ -68,12 +69,39 @@ export function ProfileScreen() {
         }
         return hunt;
       } catch (error) {
-        console.error("Error fetching hunt details:", error);
       }
     };
     fetchHunt(authCtx.email);
   }, []);
-  console.log(plannedHunts, "PLANNEDHUNTS");
+
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      try {
+        const storedImageUri = await AsyncStorage.getItem("profileImageUri");
+        if (storedImageUri) {
+          setProfileImage(storedImageUri);
+        }
+      } catch (error) {
+        console.error("Error loading profile image:", error);
+      }
+    };
+
+    loadProfileImage();
+  }, []);
+
+  useEffect(() => {
+    const saveProfileImage = async () => {
+      try {
+        if (profileImage) {
+          await AsyncStorage.setItem("profileImageUri", profileImage);
+        }
+      } catch (error) {
+        console.error("Error saving profile image:", error);
+      }
+    };
+
+    saveProfileImage();
+  }, [profileImage]);
 
   return (
     <View style={styles.container}>
