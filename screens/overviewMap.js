@@ -1,13 +1,28 @@
-import React, {useState} from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Button } from "react-native";
+import React, { useContext, useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import MapView, { Marker } from "react-native-maps";
+import { AuthContext } from "../storage/AuthContext";
+import { updateHuntBy } from "../util/http";
 
 export function OverviewMap() {
-
+  const [huntData, setHuntData] = useState(undefined);
   const route = useRoute();
   const { hunt } = route.params;
   const navigation = useNavigation();
+  const authCtx = useContext(AuthContext);
+
+  useEffect(() => {
+    const { hunt } = route.params;
+    if (hunt) {
+      setHuntData(hunt);
+    }
+  }, [route.params]);
+
+  const onConfirmHunt = () => {
+    navigation.navigate("map", { hunt: hunt, hideDestinationBtn: true });
+    updateHuntBy(authCtx.email, huntData.name, { activeHunt: true });
+  };
 
   return (
     <View style={styles.container}>
@@ -36,7 +51,6 @@ export function OverviewMap() {
         ))}
       </MapView>
 
-
       <View style={styles.durationContainer}>
         <Text style={styles.durationLabel}>This should take about:</Text>
         <Text style={styles.durationValue}>{hunt.duration} minutes</Text>
@@ -45,7 +59,7 @@ export function OverviewMap() {
       {/* Lägg till Confirm-knappen */}
       <TouchableOpacity
         style={styles.confirmButton}
-        onPress={() => navigation.navigate("map", { hunt: hunt, hideDestinationBtn: true, })}
+        onPress={() => onConfirmHunt()}
       >
         <Text style={styles.confirmButtonText}>Confirm</Text>
       </TouchableOpacity>

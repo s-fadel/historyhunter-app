@@ -1,24 +1,23 @@
 import React, { useState, useEffect, useContext } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { Camera } from "expo-camera";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { AuthContext } from "../storage/AuthContext";
 import * as http from "../util/http";
 import { EvilIcons } from "@expo/vector-icons";
 import { getHunt } from "../util/http";
 import { historyHunts } from "./HistoryHunterContent";
-import AsyncStorage from "@react-native-async-storage/async-storage"
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export function ProfileScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const [profileImage, setProfileImage] = useState(null);
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const authCtx = useContext(AuthContext);
-  const [plannedHunts, setPlannedHunts] = useState([]);
-
-  console.log(plannedHunts, "plannedHunts");
+  const [hunts, setHunts] = useState([]);
 
   const handleCameraLaunch = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
@@ -65,21 +64,29 @@ export function ProfileScreen() {
       try {
         const hunt = await getHunt(userId);
         if (hunt) {
-          setPlannedHunts(hunt);
+          setHunts(hunt);
         }
         return hunt;
       } catch (error) {
+        console.error("Error fetching hunt data:", error);
       }
     };
+
+    const unsubscribe = navigation.addListener("focus", () => {
+      fetchHunt(authCtx.email);
+    });
+
     fetchHunt(authCtx.email);
-  }, []);
+
+    return unsubscribe;
+  }, [route.params, authCtx.email, navigation]);
 
   useEffect(() => {
     const loadProfileImage = async () => {
       try {
         const storedImageUri = await AsyncStorage.getItem("profileImageUri");
-        if (storedImageUri) {
-          setProfileImage(storedImageUri);
+        if (storedImageUri && storedImageUri.user === authCtx.email) {
+          setProfileImage(storedImageUri.profileImage);
         }
       } catch (error) {
         console.error("Error loading profile image:", error);
@@ -93,7 +100,13 @@ export function ProfileScreen() {
     const saveProfileImage = async () => {
       try {
         if (profileImage) {
-          await AsyncStorage.setItem("profileImageUri", profileImage);
+          await AsyncStorage.setItem(
+            "profileImageUri",
+            JSON.stringify({
+              user: authCtx.email,
+              profileImage,
+            })
+          );
         }
       } catch (error) {
         console.error("Error saving profile image:", error);
@@ -122,7 +135,6 @@ export function ProfileScreen() {
             </TouchableOpacity>
           </View>
         )}
-
         {isCameraOpen && (
           <Camera
             style={styles.camera}
@@ -141,44 +153,87 @@ export function ProfileScreen() {
             </View>
           </Camera>
         )}
-
         <Text style={styles.username}>{username}</Text>
-
         <TouchableOpacity
           style={styles.createHuntButton}
           onPress={() => navigation.navigate("createHunt")}
         >
           <Text style={styles.createHuntButtonText}>Create Hunt</Text>
         </TouchableOpacity>
-
         <Text style={styles.sectionTitle}>{historyHunts[0].title}</Text>
         <View style={styles.descriptionContainer}>
           <Text style={styles.sectionDescription}>
             {historyHunts[0].description}
           </Text>
         </View>
-        {plannedHunts.map((hunt, index) => (
-          <View style={styles.section} key={index}>
-            <TouchableOpacity
-              style={styles.huntCard}
-              onPress={() => navigation.navigate("overviewMap", { hunt: hunt })} // Välj jakten när den trycks
-            >
-              <Text
-                style={[
-                  styles.sectionTitleRoute,
-                  {
-                    color: "#ffa953",
-                    textDecorationLine: "underline",
-                    fontWeight: "regular",
-                  },
-                ]}
-              >
-                {hunt.name}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ))}
+        {hunts.map((hunt, index) => {
+          if (!hunt.activeHunt) {
+            return (
+              <View style={styles.section} key={index}>
+                <TouchableOpacity
+                  style={styles.huntCard}
+                  onPress={() =>
+                    navigation.navigate("overviewMap", { hunt: hunt })
+                  }
+                >
+                  <Text
+                    style={[
+                      styles.sectionTitleRoute,
+                      {
+                        color: "#ffa953",
+                        textDecorationLine: "underline",
+                        fontWeight: "regular",
+                      },
+                    ]}
+                  >
+                    {hunt.name}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            );
+          } else {
+            return null;
+          }
+        })}
 
+        <Text style={styles.sectionTitle}>{historyHunts[1].title}</Text>
+        <View style={styles.descriptionContainer}>
+          <Text style={styles.sectionDescription}>
+            {historyHunts[1].description}
+          </Text>
+        </View>
+        {hunts.map((hunt, index) => {
+          if (hunt.activeHunt) {
+            return (
+              <View style={styles.section} key={index}>
+                <TouchableOpacity
+                  style={styles.huntCard}
+                  onPress={() =>
+                    navigation.navigate("map", {
+                      hunt: hunt,
+                      hideDestinationBtn: true,
+                    })
+                  }
+                >
+                  <Text
+                    style={[
+                      styles.sectionTitleRoute,
+                      {
+                        color: "#ffa953",
+                        textDecorationLine: "underline",
+                        fontWeight: "regular",
+                      },
+                    ]}
+                  >
+                    {hunt.name}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            );
+          } else {
+            return null;
+          }
+        })}
         <View style={styles.sectionCenter}>
           <Text style={styles.centeredSectionTitle}>Medals</Text>
           <View style={styles.line} />
@@ -270,6 +325,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#456268",
     width: 300,
+    marginTop: 10,
   },
   sectionDescription: {
     fontSize: 14,

@@ -9,7 +9,7 @@ import {
   Image,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { storeHunt } from "../util/http";
+import { storeHunt, updateHuntBy } from "../util/http";
 import * as Location from "expo-location";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../storage/AuthContext";
@@ -31,11 +31,10 @@ export function MapHuntScreen() {
   const [cameraRef, setCameraRef] = useState(null);
   const [previewConfirmPlace, setPreviewConfirmPlace] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
-  const [remainingDestinations, setRemainingDestinations] = useState(0);
+  const [remainingDestinations, setRemainingDestinations] = useState(undefined);
+  const [destinationsCompleted, setDestinationsCompleted] = useState(false);
 
   const authCtx = useContext(AuthContext);
-
-  console.log(hideDestinationBtn, "HIDEBTN");
 
   const storeHuntDetails = async (routeToStore) => {
     try {
@@ -69,9 +68,17 @@ export function MapHuntScreen() {
     const { hunt } = route.params;
     if (hunt) {
       setHuntData(hunt);
-      setRemainingDestinations(hunt.destinations.length);
+      setRemainingDestinations(
+        hunt.destinations ? hunt.destinations.length : 0
+      );
     }
   }, [route.params]);
+
+  useEffect(() => {
+    if(remainingDestinations === 0) {
+      updateHuntBy(authCtx.email, huntData.name, { showMedal: true });
+    }
+  }, [remainingDestinations])
 
   const handleMapPress = (event) => {
     if (addingDestination) {
@@ -91,8 +98,8 @@ export function MapHuntScreen() {
         destinations: destinationMarkers,
         userId: authCtx.email,
         activeHunt: false,
+        showMedal: false,
       };
-      console.log(huntData, "HUNTDATA-NY");
       storeHuntDetails(routeToStore);
       navigation.navigate("profile", { route: routeToStore });
     } else {
@@ -106,11 +113,12 @@ export function MapHuntScreen() {
   };
 
   const handleCapture = async () => {
-    console.log(cameraRef);
     if (cameraRef) {
       const photo = await cameraRef.takePictureAsync();
       setProfileImage(photo.uri);
-      setRemainingDestinations((prevCount) => prevCount - 1);
+      setRemainingDestinations((prevCount) =>
+        prevCount !== undefined ? prevCount - 1 : undefined
+      );
     }
 
     setCameraVisible(false);
@@ -153,6 +161,13 @@ export function MapHuntScreen() {
                   setSelectedDestination(destination);
                   if (hideDestinationBtn) {
                     setConfirmationModalVisible(true);
+                  }
+                  if (remainingDestinations === 0) {
+                    setCameraVisible(false);
+                    setConfirmationModalVisible(true);
+                    setDestinationsCompleted(true);
+                    setPreviewConfirmPlace(false);
+                    return null;
                   }
                 }}
               />
@@ -198,7 +213,7 @@ export function MapHuntScreen() {
           transparent={true}
           visible={confirmationModalVisible}
         >
-          {!previewConfirmPlace && (
+          {!previewConfirmPlace && !destinationsCompleted && (
             <View style={styles.modalContainer}>
               <View style={styles.modalContent}>
                 <Text style={styles.modalTitle}>Bekräfta ankomst</Text>
@@ -213,7 +228,7 @@ export function MapHuntScreen() {
               </View>
             </View>
           )}
-          {previewConfirmPlace && (
+          {previewConfirmPlace && !destinationsCompleted && (
             <View style={styles.modalContainer}>
               <View style={styles.modalContent}>
                 <Text style={styles.modalTitle}>NICE PIC!</Text>
@@ -225,7 +240,7 @@ export function MapHuntScreen() {
                 )}
                 <Text style={styles.modalTitle}>
                   {" "}
-                  {remainingDestinations} destionations left
+                  {remainingDestinations} destinationer kvar
                 </Text>
 
                 <Button
@@ -233,6 +248,25 @@ export function MapHuntScreen() {
                   onPress={() => {
                     setConfirmationModalVisible(false);
                     setPreviewConfirmPlace(false);
+                  }}
+                />
+              </View>
+            </View>
+          )}
+          {!previewConfirmPlace && destinationsCompleted && (
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>
+                  {remainingDestinations} destinationer kvar, vänligen återgå
+                  till till din profil
+                </Text>
+
+                <Button
+                  title="Min profil"
+                  onPress={() => {
+                    setConfirmationModalVisible(false);
+                    setPreviewConfirmPlace(false);
+                    navigation.navigate("profile", {});
                   }}
                 />
               </View>
